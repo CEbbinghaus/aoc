@@ -8,7 +8,7 @@ fn get_cell_value(char: char) -> usize {
     }
 }
 
-fn count_neighbours(table: &Array2<char>, x: usize, y: usize, width: usize, height: usize) -> usize {
+fn count_neighbors(table: &Array2<char>, x: usize, y: usize, width: usize, height: usize) -> usize {
     let mut count = 0;
 
     // let mut debug = [[0u8; 3]; 3];
@@ -45,7 +45,7 @@ fn solution1(table: &Array2<char>) -> usize {
                 continue;
             }
 
-            if count_neighbours(&table, x, y, width, height) < 4 {
+            if count_neighbors(&table, x, y, width, height) < 4 {
                 total += 1;
             }
         }
@@ -53,7 +53,7 @@ fn solution1(table: &Array2<char>) -> usize {
     total
 }
 
-fn find_indicies_to_remove(table: &Array2<char>, width: usize, height: usize) -> Vec<(usize, usize)> {
+fn find_indices_to_remove(table: &Array2<char>, width: usize, height: usize) -> Vec<(usize, usize)> {
     let mut to_remove = Vec::new();
     for y in 0..height {
         for x in 0..width {
@@ -61,7 +61,7 @@ fn find_indicies_to_remove(table: &Array2<char>, width: usize, height: usize) ->
                 continue;
             }
 
-            if count_neighbours(&table, x, y, width, height) < 4 {
+            if count_neighbors(&table, x, y, width, height) < 4 {
                 to_remove.push((x, y));
             }
         }
@@ -92,7 +92,7 @@ fn solution2(mut table: Array2<char>) -> usize {
     let width = table.ncols();
 
     let mut total_removed = 0;
-    let mut indicies = find_indicies_to_remove(&table, width, height);
+    let mut indicies = find_indices_to_remove(&table, width, height);
     while !indicies.is_empty() {
         for (x, y) in &indicies {
             table[[*y, *x]] = '.';
@@ -102,7 +102,7 @@ fn solution2(mut table: Array2<char>) -> usize {
         #[cfg(debug_assertions)]
         render_table(&table, &indicies);
 
-        indicies = find_indicies_to_remove(&table, width, height);
+        indicies = find_indices_to_remove(&table, width, height);
 
     }
 
