@@ -12,10 +12,20 @@ impl Tile {
     fn new(x: usize, y: usize) -> Self {
         Tile { x, y }
     }
+
     fn get_size(tile_a: &Tile, tile_b: &Tile) -> usize {
         let dx = (tile_a.x as isize - tile_b.x as isize).abs() as usize + 1;
         let dy = (tile_a.y as isize - tile_b.y as isize).abs() as usize + 1;
         dx * dy
+    }
+
+    fn contains(tile_a: &Tile, tile_b: &Tile, tile_c: &Tile) -> bool {
+        let min_x = tile_a.x.min(tile_b.x);
+        let max_x = tile_a.x.max(tile_b.x);
+        let min_y = tile_a.y.min(tile_b.y);
+        let max_y = tile_a.y.max(tile_b.y);
+
+        tile_c.x > min_x && tile_c.x < max_x && tile_c.y > min_y && tile_c.y < max_y
     }
 }
 
@@ -116,20 +126,7 @@ fn cmp_block(a: &(&Tile, &Tile), b: &(&Tile, &Tile)) -> std::cmp::Ordering {
     size_a.cmp(&size_b)
 }
 
-// This is a very rough bounds check since the plotted data
-// all falls within one big circle, so we can eliminate
-// all boxes that would extend outside that circle
-fn is_in_bounds(tile: &Tile) -> bool {
-    const CENTER_X: i64 = 50_000;
-    const CENTER_Y: i64 = 50_000;
-    const RADIUS: i64 = 50_000;
-
-    (tile.x as i64 - CENTER_X).pow(2) + (tile.y as i64 - CENTER_Y).pow(2) <= RADIUS.pow(2)
-}
-
 fn solution2(tiles: &Vec<Tile>) -> usize {
-    assert!(tiles.iter().all(is_in_bounds));
-
     let lines: Vec<_> = tiles
         .iter()
         .circular_tuple_windows::<(_, _)>()
@@ -139,10 +136,6 @@ fn solution2(tiles: &Vec<Tile>) -> usize {
     let blocks: Vec<_> = tiles
         .iter()
         .tuple_combinations::<(_, _)>()
-        .filter(|(a, b)| {
-            // By applying this filter, We guarantee that only "realistic" blocks are considered
-            is_in_bounds(&Tile { x: a.x, y: b.y }) && is_in_bounds(&Tile { x: b.x, y: a.y })
-        })
         .sorted_by(|a, b| cmp_block(a, b))
         .rev()
         .collect();
@@ -159,6 +152,10 @@ fn solution2(tiles: &Vec<Tile>) -> usize {
         for line in &lines {
             if block_lines.contains(line) {
                 continue;
+            }
+
+            if Tile::contains(i, j, line.start) || Tile::contains(i, j, line.end) {
+                continue 'search;
             }
 
             let intersects = block_lines
